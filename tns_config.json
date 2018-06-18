@@ -1,0 +1,118 @@
+{
+  "dataset_reader": {
+    "name": "basic_classification_reader",
+    "data_path": "/home/lsm/projects/TNS_energo/ipavlov/data",
+    "class_sep": "________"
+  },
+  "dataset_iterator": {
+    "name": "basic_classification_iterator",
+    "seed": 42,
+    "fields_to_merge": [
+      "train",
+      "valid"
+    ],
+    "merged_field": "train",
+    "field_to_split": "train",
+    "split_fields": [
+      "train",
+      "valid"
+    ],
+    "split_proportions": [
+      0.9,
+      0.1
+    ]
+  },
+  "chainer": {
+    "pipe": [
+      {
+        "name": "text_normalizer",
+        "id": "text_normalizer",
+        "in": [
+          "x"
+        ],
+        "out": [
+          "xn"
+        ]
+      },
+      {
+        "name": "embedder",
+        "in": [
+          "xn"
+        ],
+        "out": [
+          "xv"
+        ]
+      },
+
+      {
+        "name": "cnn_model",
+        "in": [
+          "xv"
+        ],
+        "in_y":[
+          "y"
+        ],
+        "out": [
+          "y_pred"
+        ],
+        "loss": "categorical_crossentropy",
+        "metrics": "classification_accuracy",
+        "optimizer": "adam",
+        "opt": {
+          "cnn_layers": [
+            {
+              "filters": 80,
+              "kernel_size": 2
+            },
+            {
+              "filters": 42,
+              "kernel_size": 2
+            }
+          ],
+          "emb_dim": 25,
+          "seq_len": 100,
+          "pool_size": 4,
+          "dropout_power": 0.5,
+          "n_classes": 20,
+          "pooling_size":2,
+          "classes":"cn_cut.pkl",
+          "new2old":"new2old.pkl"
+        },
+        "params":{
+            "text_size":50,
+            "embedding_size":25,
+            "units_lstm":20,
+            "coef_reg_lstm":1e-5,
+            "dropout_rate":0.5,
+            "rec_dropout_rate":0.4,
+            "kernel_sizes_cnn":[2,2],
+            "filters_cnn":[25,15],
+            "coef_reg_cnn":1e-4,
+            "coef_reg_den":1e-4,
+            "dense_size":20
+        },
+        "save_path":"/home/lsm/projects/TNS_energo/ipavlov/cnn_weights.hdf5",
+        "load_path":"/home/lsm/projects/TNS_energo/ipavlov/cnn_weights.hdf5"
+        
+      }
+    ],
+    "out": [
+      "y_pred"
+    ],
+    "in": [
+      "x"
+    ],
+    "in_y": [
+      "y"
+    ]
+  },
+  "train": {
+    "epochs": 1000,
+    "batch_size": 50,
+    "metrics": [
+      "sets_accuracy"
+    ],
+    "val_every_n_epochs": 1,
+    "log_every_n_epochs": 1
+  }
+}
